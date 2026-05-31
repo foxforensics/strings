@@ -11,9 +11,9 @@
 //	m uint
 //	    Maximum string length.
 //	t
-//		Trim spaces from both ends.
+//		Trim spaces from ends.
 //	a
-//	    Only ASCII strings.
+//	    Show ASCII strings only.
 //	o
 //	    Show file offset.
 //
@@ -33,16 +33,27 @@ import (
 	"go.foxforensics.dev/strings/strings"
 )
 
+var Usage = `© 2026 Fox Forensics. Licensed under MIT License.
+Usage: strings [-nmtao] FILE
+
+  -n  minimum string length
+  -m  maximum string length
+  -t  trim spaces from ends
+  -a  show ASCII strings only
+  -o  show file offset
+
+Report bugs at: foxforensics.dev/issues`
+
 func main() {
 	flag.Usage = func() {
-		_, _ = fmt.Fprintln(os.Stderr, "usage: strings [-nmtao] file")
+		_, _ = fmt.Fprintln(os.Stderr, Usage)
 		os.Exit(2)
 	}
 
 	x := flag.Uint("n", 3, "minimum string length")
 	y := flag.Uint("m", math.MaxUint32, "maximum string length")
-	t := flag.Bool("t", false, "trim spaces from both ends")
-	a := flag.Bool("a", false, "only ASCII strings")
+	t := flag.Bool("t", false, "trim spaces from ends")
+	a := flag.Bool("a", false, "show ASCII strings only")
 	o := flag.Bool("o", false, "show file offset")
 
 	flag.Parse()
