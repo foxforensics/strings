@@ -29,8 +29,8 @@ import (
 	"math"
 	"os"
 
-	"go.foxforensics.dev/go-mmap"
-	"go.foxforensics.dev/strings/strings"
+	"go.foxforensics.eu/go-mmap"
+	"go.foxforensics.eu/strings/strings"
 )
 
 var Usage = `© 2026 Fox Forensics. Licensed under MIT License.
@@ -42,7 +42,7 @@ Usage: strings [-nmtao] FILE
   -a  show ASCII strings only
   -o  show file offset
 
-Report bugs at: foxforensics.dev/issues`
+Report bugs at: foxforensics.eu/issues`
 
 func main() {
 	flag.Usage = func() {

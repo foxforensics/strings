@@ -1,7 +1,7 @@
-module go.foxforensics.dev/strings
+module go.foxforensics.eu/strings
 
 go 1.26
 
-require go.foxforensics.dev/go-mmap v0.2.1
+require go.foxforensics.eu/go-mmap v1.0.0
 
-require golang.org/x/sys v0.45.0 // indirect
+require golang.org/x/sys v0.46.0 // indirect

@@ -2,7 +2,7 @@
 Carve ASCII and Unicode strings from files.
 
 ```console
-go install go.foxforensics.dev/strings@latest
+go install go.foxforensics.eu/strings@latest
 ```
 
 ## Usage
