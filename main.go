@@ -24,10 +24,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"math"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"go.foxforensics.eu/go-mmap"
 	"go.foxforensics.eu/strings/strings"
@@ -62,25 +65,33 @@ func main() {
 		flag.Usage()
 	}
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+
+	defer stop()
+
 	f, err := os.Open(flag.Arg(0))
 
 	if err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
-	defer func() { _ = f.Close() }()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	m, err := mmap.Map(f, mmap.RDONLY, 0)
 
 	if err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
-	defer func() { _ = m.Unmap() }()
+	defer func() {
+		_ = m.Unmap()
+	}()
 
-	for s := range strings.Carve(m, *x, *y, *a, *t) {
+	for s := range strings.Carve(ctx, m, *x, *y, *a, *t) {
 		if *o {
 			_, _ = fmt.Printf("%08x %s\n", s.Offset, s.Value)
 		} else {

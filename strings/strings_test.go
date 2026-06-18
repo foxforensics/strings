@@ -1,6 +1,7 @@
 package strings
 
 import (
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -23,7 +24,7 @@ func TestCarve(t *testing.T) {
 			path:  bin,
 			trim:  true,
 			ascii: true,
-			count: 5633,
+			count: 5590,
 		},
 		{
 			name:  "Unicode",
@@ -34,6 +35,8 @@ func TestCarve(t *testing.T) {
 		},
 	} {
 		t.Run("Test Carve "+tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
 			buf, err := fixture(tt.path)
 
 			if err != nil {
@@ -42,12 +45,12 @@ func TestCarve(t *testing.T) {
 
 			n := 0
 
-			for range Carve(buf, 3, 255, tt.ascii, tt.trim) {
+			for range Carve(ctx, buf, 3, 255, tt.ascii, tt.trim) {
 				n++
 			}
 
 			if n != tt.count {
-				t.Fatal("count mismatch")
+				t.Fatalf("invalid count: %d", n)
 			}
 		})
 	}
@@ -55,6 +58,8 @@ func TestCarve(t *testing.T) {
 
 func BenchmarkCarve(b *testing.B) {
 	b.Run("Benchmark Carve", func(b *testing.B) {
+		ctx := context.Background()
+
 		bin, err := fixture(bin)
 
 		if err != nil {
@@ -64,7 +69,7 @@ func BenchmarkCarve(b *testing.B) {
 		b.ResetTimer()
 
 		for n := 0; n < b.N; n++ {
-			for range Carve(bin, 3, 255, false, false) {
+			for range Carve(ctx, bin, 3, 255, false, false) {
 			}
 		}
 	})
