@@ -6,6 +6,7 @@ package strings
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -22,15 +23,17 @@ type String struct {
 // Carve ASCII and Unicode string data.
 //
 // The returned channel will be closed at the end of the operation.
-func Carve(data []byte, min, max uint, ascii, trim bool) <-chan *String {
+func Carve(ctx context.Context, data []byte, min, max uint, ascii, trim bool) <-chan *String {
 	ch := make(chan *String, 1024)
 
 	go func() {
+		defer close(ch)
+
 		b := bufio.NewReader(bytes.NewReader(data))
 		s := make([]rune, 0, max)
 		i := uint64(0)
 
-		flush := func() {
+		flush := func() bool {
 			v := string(s)
 
 			if trim {
@@ -38,14 +41,18 @@ func Carve(data []byte, min, max uint, ascii, trim bool) <-chan *String {
 			}
 
 			if uint(utf8.RuneCountInString(v)) >= min {
-				ch <- &String{i - uint64(len(v)), v}
+				select {
+				case <-ctx.Done():
+					return false
+				default:
+					ch <- &String{i - uint64(len(v)), v}
+				}
 			}
 
 			s = s[:0]
-		}
 
-		defer close(ch)
-		defer flush()
+			return true
+		}
 
 		var r rune
 		var n int
@@ -53,16 +60,21 @@ func Carve(data []byte, min, max uint, ascii, trim bool) <-chan *String {
 
 		for ; ; i += uint64(n) {
 			if r, n, err = b.ReadRune(); err != nil {
+				flush()
 				return
 			}
 
-			if !strconv.IsPrint(r) || ascii && r >= 0xFF {
-				flush()
+			if !strconv.IsPrint(r) || ascii && (0x20 > r || r > 0x7E) {
+				if !flush() {
+					return
+				}
 				continue
 			}
 
 			if uint(len(s)) >= max {
-				flush()
+				if !flush() {
+					return
+				}
 			}
 
 			s = append(s, r)
